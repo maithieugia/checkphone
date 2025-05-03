@@ -1,76 +1,82 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8">
-  <title>Check Số Điện Thoại Phong Thủy</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Check Số Điện Thoại</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 40px;
-      background-color: #f4f4f4;
-      text-align: center;
+      padding: 30px;
+      background: #f7f7f7;
     }
-    input[type="text"] {
+    input, button {
       padding: 10px;
-      width: 250px;
       font-size: 16px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-left: 10px;
-      cursor: pointer;
+      margin: 5px 0;
     }
     #loading {
       display: none;
+      font-style: italic;
+      color: gray;
+    }
+    #result {
       margin-top: 20px;
+      white-space: pre-wrap;
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ddd;
     }
   </style>
 </head>
 <body>
+  <h2>Phân tích số điện thoại theo phong thủy</h2>
+  <form id="phoneForm">
+    <label>Nhập số điện thoại:</label><br>
+    <input type="text" id="phoneInput" placeholder="Ví dụ: 0888134448" required />
+    <button type="submit">Check</button>
+  </form>
 
-  <h2>Check Phong Thủy Số Điện Thoại</h2>
-  <input type="text" id="phone" placeholder="Nhập số điện thoại">
-  <button onclick="checkPhone()">Check</button>
-
-  <div id="loading">
-    <p>Đang kiểm tra...</p>
-    <img src="https://i.gifer.com/YCZH.gif" alt="Loading" width="50">
-  </div>
+  <div id="loading">⏳ Đang xử lý...</div>
+  <div id="result"></div>
 
   <script>
-    function checkPhone() {
-      const phone = document.getElementById('phone').value.trim();
-      if (!phone) {
-        alert("Vui lòng nhập số điện thoại.");
-        return;
-      }
+    const form = document.getElementById('phoneForm');
+    const input = document.getElementById('phoneInput');
+    const resultDiv = document.getElementById('result');
+    const loadingDiv = document.getElementById('loading');
 
-      document.getElementById('loading').style.display = 'block';
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const phone = input.value.trim();
+      if (!phone) return alert("Vui lòng nhập số điện thoại!");
 
-      fetch('https://n8n.sieutho.vn/webhook/bf389061-2aa8-4a9b-b182-71a9096b0552', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ phone: phone })
-      })
-      .then(response => response.json())
-      .then(data => {
-        document.getElementById('loading').style.display = 'none';
+      resultDiv.innerHTML = "";
+      loadingDiv.style.display = "block";
+
+      try {
+        const response = await fetch('https://n8n.sieutho.vn/webhook/bf389061-2aa8-4a9b-b182-71a9096b0552', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ phone })
+        });
+
+        const data = await response.json();
+        loadingDiv.style.display = "none";
+
         if (data.Ketqua) {
-          alert(data.Ketqua);
+          resultDiv.innerHTML = `<strong>Kết quả:</strong><br>${data.Ketqua}`;
         } else {
-          alert("Không nhận được kết quả phân tích.");
+          resultDiv.innerHTML = "❗ Không có kết quả hợp lệ trả về.";
         }
-      })
-      .catch(error => {
-        document.getElementById('loading').style.display = 'none';
-        alert("Có lỗi xảy ra khi gửi yêu cầu.");
-        console.error(error);
-      });
-    }
+      } catch (error) {
+        loadingDiv.style.display = "none";
+        resultDiv.innerHTML = "❌ Đã xảy ra lỗi khi gửi dữ liệu.";
+        console.error("Lỗi:", error);
+      }
+    });
   </script>
-
 </body>
 </html>
