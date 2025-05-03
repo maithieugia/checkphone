@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Check Số Điện Thoại Phong Thủy</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 250px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    #loading {
+      display: none;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Check Phong Thủy Số Điện Thoại</h2>
+  <input type="text" id="phone" placeholder="Nhập số điện thoại">
+  <button onclick="checkPhone()">Check</button>
+
+  <div id="loading">
+    <p>Đang kiểm tra...</p>
+    <img src="https://i.gifer.com/YCZH.gif" alt="Loading" width="50">
+  </div>
+
+  <script>
+    function checkPhone() {
+      const phone = document.getElementById('phone').value.trim();
+      if (!phone) {
+        alert("Vui lòng nhập số điện thoại.");
+        return;
+      }
+
+      document.getElementById('loading').style.display = 'block';
+
+      fetch('https://n8n.sieutho.vn/webhook/bf389061-2aa8-4a9b-b182-71a9096b0552', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ phone: phone })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('loading').style.display = 'none';
+        if (data.Ketqua) {
+          alert(data.Ketqua);
+        } else {
+          alert("Không nhận được kết quả phân tích.");
+        }
+      })
+      .catch(error => {
+        document.getElementById('loading').style.display = 'none';
+        alert("Có lỗi xảy ra khi gửi yêu cầu.");
+        console.error(error);
+      });
+    }
+  </script>
+
+</body>
+</html>
